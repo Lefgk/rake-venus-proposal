@@ -157,6 +157,6 @@ The full technical appendix is in [APPENDIX.md](APPENDIX.md):
 
 - **A1:** the bug, and why there is no owner-side fix
 - **A2:** the rescue, one VIP transaction
-- **A3:** the claim contract, with the per-wallet table in [ENTITLEMENTS.csv](data/ENTITLEMENTS.csv)
+- **A3:** the claim contract, with the per-wallet table in [depositor_share_of_each_frozen_pool.csv](data/depositor_share_of_each_frozen_pool.csv)
 - **A4:** the 2021 compensation data
 - **A5:** tests and reproduction

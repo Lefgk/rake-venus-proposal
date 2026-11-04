@@ -9,20 +9,27 @@ interface IVTokenImplementation {
     function implementation() external view returns (address);
 }
 
-/// The deployment, shared by script/DeployRescueContracts.s.sol and the tests, so both deploy the same way.
+/// How the contracts are deployed, shared by the two deploy scripts and the tests, so both
+/// deploy the same way.
 library RescueContractsDeployment {
-    /// One claim contract (the caller becomes its owner, fee recipient and beneficiary; it
-    /// snapshots all 103 depositors' farm shares in its constructor), then one RescueDelegateV3
-    /// per market, each bound to its strategy, the claim contract and the market's current
-    /// implementation (which the proposal restores).
-    function deploy() internal returns (RakeStuckFundsClaim claim, address[7] memory rescueDelegates) {
-        claim = new RakeStuckFundsClaim();
+    /// RAKE deploys this (script/DeployRakeStuckFundsClaim.s.sol). The caller becomes the claim
+    /// contract's owner, fee recipient and beneficiary; its constructor snapshots all 103
+    /// depositors' farm shares.
+    function deployClaim() internal returns (RakeStuckFundsClaim) {
+        return new RakeStuckFundsClaim();
+    }
+
+    /// Venus deploys these (script/DeployRescueDelegates.s.sol). One RescueDelegateV3 per market,
+    /// each bound to its strategy, the claim contract and the market's current implementation
+    /// (which the proposal restores). The deployer gets no power over them: only the market
+    /// admin can call settleAndRescue().
+    function deployRescueDelegates(address claim) internal returns (address[7] memory rescueDelegates) {
         address[7] memory markets = RakeFrozenPositions.vTokens();
         address[7] memory strategies = RakeFrozenPositions.strategies();
         for (uint256 i; i < RakeFrozenPositions.COUNT; ++i) {
             address current = IVTokenImplementation(markets[i]).implementation();
             require(current == RakeFrozenPositions.VBEP20_DELEGATE_IMPLEMENTATION, "market implementation changed");
-            rescueDelegates[i] = address(new RescueDelegateV3(strategies[i], address(claim), current));
+            rescueDelegates[i] = address(new RescueDelegateV3(strategies[i], claim, current));
         }
     }
 }

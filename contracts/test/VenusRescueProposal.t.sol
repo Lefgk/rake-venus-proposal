@@ -27,7 +27,7 @@ interface IComptrollerS {
 }
 
 /// Simulates script/VenusRescueProposal.s.sol on a BSC fork: the contracts are deployed exactly as
-/// script/DeployRescueContracts.s.sol deploys them, then every command of the proposal is sent
+/// script/DeployRakeStuckFundsClaim.s.sol and script/DeployRescueDelegates.s.sol deploy them, then every command of the proposal is sent
 /// from the Venus Normal Timelock, byte-for-byte as Venus would submit it. The owner then opens
 /// the claim contract, which redeems its vTokens.
 contract VenusRescueProposalTest is Test {
@@ -58,7 +58,8 @@ contract VenusRescueProposalTest is Test {
         if (b == 0) vm.createSelectFork(vm.envString("BSC_RPC_URL"));
         else vm.createSelectFork(vm.envString("BSC_RPC_URL"), b);
         // This test is the deployer: owner, fee recipient and beneficiary of the claim contract.
-        (claim, rescueDelegates) = RescueContractsDeployment.deploy();
+        claim = RescueContractsDeployment.deployClaim();
+        rescueDelegates = RescueContractsDeployment.deployRescueDelegates(address(claim));
     }
 
     /// vBUSD, vBTC, vETH, vLINK, vUSDT, vUSDC, vDOT — RakeFarm pids 9–15.

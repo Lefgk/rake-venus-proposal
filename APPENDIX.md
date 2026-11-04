@@ -72,8 +72,8 @@ sequenceDiagram
     participant V as Venus
     participant D as Depositors
     R->>R: 1. deploy RakeStuckFundsClaim → claim address
-    R->>R: 2. deploy 7 × RescueDelegateV3(strategy, claim, current vToken implementation)
-    R->>V: 3. hand over the claim address + the 7 V3 addresses
+    R->>V: 2. hand over the claim address
+    V->>V: 3. deploy 7 × RescueDelegateV3(strategy, claim, current vToken implementation)
     V->>V: 4. verify every address, then propose and vote the VIP
     V->>V: 5. VIP executes (48 h timelock): settle XVS, rescue 7 markets, optional XVS grant
     R->>R: 6. open(): redeem vTokens, take 10%, start the 90 days
@@ -117,7 +117,7 @@ flowchart LR
 - **Rules:** `open()` needs every token balance > 0. Claims are paid only to `msg.sender`, with per-token flags so one token that refuses a transfer blocks only itself. A hard cap stops any token paying out past its pool. Before `open()`, only the owner can sweep, so a VIP that lands late can still be opened.
 - **XVS (optional, up to Venus, stays open):** Venus may send XVS at any time, in any number of transfers, before or after `open()`; each arrival is fee'd once and claimable during the window. A wallet's XVS cut = XVS pool × Σ(pool weight × wallet shares ÷ total) ÷ Σ weights. The weights are the XVS each strategy earned (vETH 2,025 · vBUSD 1,887 · vUSDC 1,706 · vBTC 1,423 · vLINK 481 · vUSDT 421 · vDOT 79).
 - **Can every wallet claim?** No depositor is a contract. 9 of the 103 carry EIP-7702 delegation code (`0xef0100…`); these are key-held wallets that call `claim()` directly.
-- **Entitlement table:** `data/ENTITLEMENTS.csv` gives each wallet's % of each pool, read from RakeFarm `userInfo` ÷ `sharesTotal`. The 103 wallets sum to 100.000000% of every pool; `DeployRescueContractsTest` checks that the recorded shares cover every pool. Amounts = % × the pool's depositor share on the day the funds arrive.
+- **Entitlement table:** `data/depositor_share_of_each_frozen_pool.csv` gives each wallet's % of each pool, read from RakeFarm `userInfo` ÷ `sharesTotal`. The 103 wallets sum to 100.000000% of every pool; `DeployRakeStuckFundsClaimTest` checks that the recorded shares cover every pool. Amounts = % × the pool's depositor share on the day the funds arrive.
 - **Claim site:** https://claim-frontend-one.vercel.app
 
 ---
@@ -139,7 +139,7 @@ pie title Wallets by 25-Mar-2021 coverage (101 measured)
 - Frozen equity is valued at 24 July 2026 prices (BSC block 114,966,322, total $972,308).
 - Wallets that never sold RAKE: 4, with a combined frozen equity of $68.
 - Founder wallet: 9,702.43 RAKE minted; 8,933.66 (92.08%) never moved; 4.5 RAKE (0.046%) sold.
-- Source: `data/wallet_master.csv` (one row per wallet).
+- Source: `data/depositor_2021_rake_compensation.csv` (one row per wallet; columns explained in `data/README.md`).
 
 ---
 
@@ -153,8 +153,10 @@ FORK_BLOCK=<block> BSC_RPC_URL=<BSC archive RPC> forge test                # eve
 
 forge script script/RescueAmounts.s.sol --fork-url $BSC_RPC_URL --fork-block-number 131610085
                                      # the proposal's figures: $1,074,900 at Venus oracle prices
-forge script script/DeployRescueContracts.s.sol --rpc-url $BSC_RPC_URL --broadcast
-                                     # deploy; writes the addresses into addresses.json
+forge script script/DeployRakeStuckFundsClaim.s.sol --rpc-url $BSC_RPC_URL --broadcast
+                                     # RAKE: deploy the claim contract; recorded in addresses.json
+forge script script/DeployRescueDelegates.s.sol --rpc-url $BSC_RPC_URL --broadcast
+                                     # Venus: deploy the 7 rescue delegates; recorded in addresses.json
 forge script script/VenusRescueProposal.s.sol --fork-url $BSC_RPC_URL
                                      # the proposal: targets, values, signatures, calldatas
 ```
@@ -162,7 +164,8 @@ forge script script/VenusRescueProposal.s.sol --fork-url $BSC_RPC_URL
 | Script | What it does | Its test |
 |---|---|---|
 | `RescueAmounts` | read-only: each position's net value (tokens, USD at Venus oracle prices) and the 20/10/70 split | n/a (it only reads) |
-| `DeployRescueContracts` | deploys the claim contract, then one `RescueDelegateV3` per market bound to its strategy, the claim contract and the market's current implementation | `DeployRescueContractsTest` |
+| `DeployRakeStuckFundsClaim` | RAKE: deploys the claim contract (deployer = owner, fee recipient, beneficiary) | `DeployRakeStuckFundsClaimTest` |
+| `DeployRescueDelegates` | Venus: deploys one `RescueDelegateV3` per market bound to its strategy, the claim contract and the market's current implementation | `DeployRescueDelegatesTest` |
 | `VenusRescueProposal` | builds the 30 commands (31 with the XVS grant) and prints them in `GovernorBravo.propose()` form | `VenusRescueProposalTest` sends those exact bytes from the Timelock |
 
 | Suite | What it proves | Result |
@@ -170,7 +173,8 @@ forge script script/VenusRescueProposal.s.sol --fork-url $BSC_RPC_URL
 | `RakeStuckFundsClaimTest` | pro-rata split, fee, 90-day window, owner-only 120-day emergency sweep, XVS weighting and late XVS, no double claim, claimable = 0 after the window | 20 / 20 |
 | `VenusRescueProposalTest` | the proposal's exact commands on a BSC fork: 20/80 split, `open()` redeems every vToken, admin-only V3, XVS settle = 0, optional XVS grant, other suppliers unchanged on all 7 markets; full chain VIP → open → all 103 wallets claim exactly their share → pools empty to dust → sweep; a late VIP cannot be swept by a third party | 9 / 9 |
 | `PostRescueRakeFarmSafetyTest` | after the rescue: nobody can deposit, inflate farm shares or withdraw twice; depositors then claim | 1 / 1 |
-| `DeployRescueContractsTest` | each rescue delegate bound to its strategy, the claim contract and the current implementation; claim contract owned by the deployer; all 103 depositors snapshotted | 3 / 3 |
+| `DeployRakeStuckFundsClaimTest` | claim contract owned by the deployer, tokens in market order, all 103 depositors snapshotted | 2 / 2 |
+| `DeployRescueDelegatesTest` | each delegate bound to its strategy, the claim contract, the treasury and the current implementation; refuses to deploy if a market's implementation changed | 2 / 2 |
 | `RescueDelegateV3Test` | debt settled from the strategies' own collateral, exchange rate never falls, admin-only, one-shot | 5 / 5 |
 
-Fork runs were made at BSC block 131,658,996 (38 / 38 pass).
+Fork runs were made at BSC block 131,658,996 (39 / 39 pass).

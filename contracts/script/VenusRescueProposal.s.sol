@@ -3,22 +3,23 @@ pragma solidity ^0.8.25;
 
 import "forge-std/Script.sol";
 import "./libraries/VenusRescueProposalCommands.sol";
+import "./libraries/AddressesJson.sol";
 
-/// Prints the proposal Venus submits, as the four arrays GovernorBravo.propose() takes:
+/// Step 3, for Venus: prints the proposal, as the four arrays GovernorBravo.propose() takes:
 /// targets, values (all 0), signatures, calldatas (ABI-encoded params, without the selector).
-/// Reads the deployed claim contract and rescue delegates from addresses.json, so run
-/// DeployRescueContracts first. Read-only: sends nothing.
+/// Reads the claim contract and rescue delegates from addresses.json, so run
+/// DeployRakeStuckFundsClaim and DeployRescueDelegates first. Read-only: sends nothing.
 ///
 ///   forge script script/VenusRescueProposal.s.sol --fork-url $BSC_RPC_URL
 ///   INCLUDE_XVS_GRANT=true forge script script/VenusRescueProposal.s.sol --fork-url $BSC_RPC_URL
 contract VenusRescueProposal is Script {
     function run() external {
-        string memory json = vm.readFile("../addresses.json");
-        address claim = _deployed(json, ".deployed.claimContract");
+        address claim = AddressesJson.deployed(".deployed.claimContract", "DeployRakeStuckFundsClaim");
         string[7] memory symbols = RakeFrozenPositions.symbols();
         address[7] memory rescueDelegates;
         for (uint256 i; i < RakeFrozenPositions.COUNT; ++i) {
-            rescueDelegates[i] = _deployed(json, string.concat(".deployed.rescueDelegates.", symbols[i]));
+            rescueDelegates[i] =
+                AddressesJson.deployed(string.concat(".deployed.rescueDelegates.", symbols[i]), "DeployRescueDelegates");
         }
         VenusRescueProposalCommands.Command[] memory c =
             VenusRescueProposalCommands.build(claim, rescueDelegates, vm.envOr("INCLUDE_XVS_GRANT", false));
@@ -35,12 +36,5 @@ contract VenusRescueProposal is Script {
         vm.serializeUint("proposal", "values", values);
         vm.serializeString("proposal", "signatures", signatures);
         console.log(vm.serializeBytes("proposal", "calldatas", calldatas));
-    }
-
-    function _deployed(string memory json, string memory key) internal view returns (address a) {
-        try vm.parseJsonAddress(json, key) returns (address parsed) {
-            a = parsed;
-        } catch {}
-        require(a.code.length > 0, string.concat(key, " in addresses.json is not deployed: run DeployRescueContracts first"));
     }
 }

@@ -4,33 +4,17 @@ pragma solidity ^0.8.25;
 import "forge-std/Test.sol";
 import "../script/libraries/RescueContractsDeployment.sol";
 
-/// Checks script/DeployRescueContracts.s.sol on a BSC fork: what it deploys is wired to the right
-/// strategies, markets and implementation, and the claim contract snapshots every depositor
-/// before any rescue runs.
-contract DeployRescueContractsTest is Test {
+/// Checks script/DeployRakeStuckFundsClaim.s.sol on a BSC fork: the claim contract is owned by its
+/// deployer, lists the seven underlyings in market order, and snapshots every depositor before
+/// any rescue runs.
+contract DeployRakeStuckFundsClaimTest is Test {
     RakeStuckFundsClaim claim;
-    address[7] rescueDelegates;
 
     function setUp() public {
         uint256 b = vm.envOr("FORK_BLOCK", uint256(0));
         if (b == 0) vm.createSelectFork(vm.envString("BSC_RPC_URL"));
         else vm.createSelectFork(vm.envString("BSC_RPC_URL"), b);
-        (claim, rescueDelegates) = RescueContractsDeployment.deploy();
-    }
-
-    function test_deploy_eachRescueDelegateIsBoundToItsStrategyTheClaimContractAndTheCurrentImplementation()
-        public
-        view
-    {
-        address[7] memory markets = RakeFrozenPositions.vTokens();
-        address[7] memory strategies = RakeFrozenPositions.strategies();
-        for (uint256 i; i < RakeFrozenPositions.COUNT; ++i) {
-            RescueDelegateV3 d = RescueDelegateV3(rescueDelegates[i]);
-            assertEq(d.STRATEGY(), strategies[i], "strategy");
-            assertEq(d.CLAIM(), address(claim), "claim contract");
-            assertEq(d.ORIGINAL_IMPL(), IVTokenImplementation(markets[i]).implementation(), "original implementation");
-            assertEq(d.TREASURY(), RakeFrozenPositions.VENUS_TREASURY, "treasury");
-        }
+        claim = RescueContractsDeployment.deployClaim();
     }
 
     function test_deploy_claimContractIsOwnedByTheDeployerAndListsTheSevenUnderlyingsInMarketOrder() public view {
