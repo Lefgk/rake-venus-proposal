@@ -2,7 +2,7 @@
 pragma solidity ^0.8.25;
 
 import "forge-std/Test.sol";
-import "./ClaimHarness.sol";
+import "./RakeStuckFundsClaimHarness.sol";
 
 contract ClaimMockToken {
     uint8 public immutable decimals;
@@ -65,7 +65,7 @@ contract MockFarm {
 }
 
 contract RakeStuckFundsClaimTest is Test, IClaimCfg {
-    ClaimHarness c;
+    RakeStuckFundsClaimHarness c;
     MockFarm farm;
     MockStrat sUsdc;
     MockStrat sBtc;
@@ -128,7 +128,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
         pids = [14, 10];
         xvs = new ClaimMockToken(18);
         xvsWeights = [3, 1]; // the USDC strategy earned 3x the XVS of the BTC one
-        c = new ClaimHarness();
+        c = new RakeStuckFundsClaimHarness();
     }
 
     function _fundAndOpen(uint256 usdcAmt, uint256 btcAmt) internal {
@@ -137,14 +137,14 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
         c.open();
     }
 
-    function test_tokensAndStratsReadFromFarm() public view {
+    function test_constructor_readsTokensAndStrategiesFromRakeFarm() public view {
         assertEq(c.tokens(0), address(usdc));
         assertEq(c.tokens(1), address(btc8));
         assertEq(c.pidOf(address(btc8)), 10);
         assertEq(c.sharesOf(alice, address(usdc)), ALICE_USDC);
     }
 
-    function test_splitIsProRataOfWhatArrived() public {
+    function test_claim_paysEachDepositorProRataOfWhatArrived() public {
         _fundAndOpen(200_000e18, 3.9e8);
         assertEq(usdc.balanceOf(dev), 20_000e18);
         assertEq(btc8.balanceOf(dev), 0.39e8);
@@ -159,14 +159,14 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
         assertEq(btc8.balanceOf(alice), 3.51e8); // sole BTC holder gets the whole pool
     }
 
-    function test_differentAmountStillSplitsSameRatio() public {
+    function test_claim_anyArrivedAmountSplitsInTheSameRatio() public {
         _fundAndOpen(123_456e18, 1);
         vm.prank(bob);
         c.claim();
         assertApproxEqAbs(usdc.balanceOf(bob), (123_456e18 - 12_345.6e18) / 4, 1);
     }
 
-    function test_claimablePreviewMatchesClaim() public {
+    function test_claimable_previewEqualsWhatClaimPays() public {
         _fundAndOpen(200_000e18, 3.9e8);
         uint256 q = c.claimable(alice, address(usdc));
         vm.prank(alice);
@@ -175,7 +175,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
         assertEq(c.claimable(alice, address(usdc)), 0);
     }
 
-    function test_onlyDepositorsAndOnlyOnce() public {
+    function test_claim_onlyDepositorsCanClaimAndOnlyOnce() public {
         _fundAndOpen(200_000e18, 3.9e8);
         vm.prank(alice);
         c.claim();
@@ -189,7 +189,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
     }
 
     /// If farm shares ever grew after open, nobody could be paid past the pool.
-    function test_sharesGrowingAfterOpenCannotOverpay() public {
+    function test_claim_farmSharesGrowingAfterOpenCannotOverpayThePool() public {
         _fundAndOpen(200_000e18, 3.9e8);
         farm.setShares(14, bob, 10 * (ALICE_USDC + BOB_USDC)); // impossible on the real farm
         vm.prank(bob);
@@ -200,7 +200,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
         c.claimToken(address(usdc));
     }
 
-    function test_openRevertsIfATokenNeverArrived() public {
+    function test_open_revertsIfAnyTokenNeverArrived() public {
         usdc.mint(address(c), 1e18);
         vm.expectRevert("token not funded");
         c.open();
@@ -209,7 +209,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
         assertGt(c.openedAt(), 0);
     }
 
-    function test_oneBlockedTokenDoesNotBlockTheOthers() public {
+    function test_claim_oneBlockedTokenDoesNotBlockTheOtherTokens() public {
         _fundAndOpen(200_000e18, 3.9e8);
         btc8.block_(alice);
         vm.prank(alice);
@@ -222,14 +222,14 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
         assertEq(c.claimable(alice, address(btc8)), 3.51e8);
     }
 
-    function test_noOwnerPowerAfterOpen() public {
+    function test_open_ownerLosesAllPowerOnceOpened() public {
         _fundAndOpen(200_000e18, 3.9e8);
         assertEq(c.owner(), address(0));
         vm.expectRevert("not owner");
         c.open();
     }
 
-    function test_recordedSharesSurviveAFarmBurn() public {
+    function test_record_snapshotSurvivesTheFarmBurningShares() public {
         address[] memory ws = new address[](2);
         (ws[0], ws[1]) = (alice, bob);
         c.record(ws);
@@ -240,7 +240,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
         assertApproxEqAbs(usdc.balanceOf(alice), 135_000e18, 1); // full claim kept
     }
 
-    function test_recordIsOncePerWalletAndCannotBeRaised() public {
+    function test_record_oncePerWalletAndCannotBeRaised() public {
         address[] memory ws = new address[](1);
         ws[0] = bob;
         c.record(ws);
@@ -249,22 +249,22 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
         assertEq(c.sharesOf(bob, address(usdc)), BOB_USDC);
     }
 
-    function test_constructorRecordsWallets() public {
+    function test_constructor_recordsTheBuiltInDepositorWallets() public {
         wallets = [alice];
-        ClaimHarness c2 = new ClaimHarness();
+        RakeStuckFundsClaimHarness c2 = new RakeStuckFundsClaimHarness();
         assertTrue(c2.recorded(alice));
         assertEq(c2.snapshot(alice, address(usdc)), ALICE_USDC);
         assertEq(c2.snapshot(alice, address(btc8)), ALICE_BTC);
     }
 
-    function test_unrecordedWalletFallsBackToLiveShares() public {
+    function test_claim_unrecordedWalletIsPaidOnLiveFarmShares() public {
         _fundAndOpen(200_000e18, 3.9e8);
         vm.prank(bob);
         c.claim();
         assertApproxEqAbs(usdc.balanceOf(bob), 45_000e18, 1);
     }
 
-    function test_afterDeadlineRemainderToBeneficiary() public {
+    function test_sweep_after90DayWindowRemainderGoesToBeneficiary() public {
         _fundAndOpen(200_000e18, 3.9e8);
         vm.prank(alice);
         c.claim();
@@ -286,7 +286,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
     }
 
     /// If open() never runs, funds are not locked forever: the owner can sweep 120 days after deploy.
-    function test_neverOpenedEmergencySweepAfter120Days() public {
+    function test_sweep_ifNeverOpenedOwnerCanSweepAfter120Days() public {
         usdc.mint(address(c), 50_000e18);
         vm.warp(c.DEPLOYED_AT() + 121 days);
         vm.prank(alice); // nobody but the owner, before open — a late VIP stays openable
@@ -305,7 +305,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
 
     /// XVS: pool weight first (3:1), then shares within the pool.
     /// alice = (3 × 3/4 + 1 × 1) / 4 = 81.25%, bob = (3 × 1/4) / 4 = 18.75%.
-    function test_xvsSplitByEarnedWeightThenShares() public {
+    function test_xvs_splitByPoolWeightThenByShares() public {
         xvs.mint(address(c), 1_000e18);
         assertApproxEqAbs(c.claimable(alice, address(xvs)), 731.25e18, 1, "preview");
         _fundAndOpen(200_000e18, 3.9e8);
@@ -324,7 +324,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
     }
 
     /// No XVS arriving changes nothing: open works, nobody is owed XVS.
-    function test_noXvsChangesNothing() public {
+    function test_xvs_noXvsArrivingChangesNothing() public {
         _fundAndOpen(200_000e18, 3.9e8);
         assertEq(c.pool(address(xvs)), 0);
         assertEq(c.claimable(alice, address(xvs)), 0);
@@ -337,7 +337,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
     }
 
     /// XVS stays open: it can arrive after open, in several transfers, and is claimable each time.
-    function test_xvsArrivingAfterOpenIsStillClaimable() public {
+    function test_xvs_arrivingAfterOpenIsStillClaimable() public {
         _fundAndOpen(200_000e18, 3.9e8);
         vm.prank(alice);
         c.claim();
@@ -367,7 +367,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
     }
 
     /// A VIP that lands after day 120 can still be opened: no third-party sweep got there first.
-    function test_lateFundingStillOpens() public {
+    function test_open_fundsArrivingAfterDay120CanStillBeOpened() public {
         vm.warp(c.DEPLOYED_AT() + 200 days);
         _fundAndOpen(200_000e18, 3.9e8);
         vm.prank(alice);
@@ -377,7 +377,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
 
     /// After the window, claimable() reads 0 for every token, and the XVS view does not revert
     /// once XVS has been swept.
-    function test_claimableZeroAfterWindowAndSweep() public {
+    function test_claimable_readsZeroAfterWindowAndSweep() public {
         xvs.mint(address(c), 1_000e18);
         _fundAndOpen(200_000e18, 3.9e8);
         assertGt(c.claimable(alice, address(usdc)), 0);

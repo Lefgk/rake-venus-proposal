@@ -24,7 +24,7 @@ interface IStratGov {
 /// Whole flow on live BSC state: Venus self-funded rescue of the 7 pools → underlying into
 /// RakeStuckFundsClaim (reads shares from RakeFarm, 10% fee) → open → real depositors claim.
 /// Also proves the gov cannot inflate its farm shares after the rescue.
-contract ClaimEndToEndTest is Test {
+contract PostRescueRakeFarmSafetyTest is Test {
     address constant TIMELOCK = 0x939bD8d64c0A9583A7Dcea9933f7b21697ab6396;
     address constant FARM = 0x7f7Bf15B9c68D23339C31652C8e860492991760d;
     address constant GOV = 0x16c7C45725A977ae6530e8dEE73F6da9aE2e7E07;
@@ -68,7 +68,7 @@ contract ClaimEndToEndTest is Test {
         else vm.createSelectFork(vm.envString("BSC_RPC_URL"), b);
     }
 
-    function test_fullFlow() public {
+    function test_afterRescue_noOneCanDepositInflateSharesOrDoubleWithdraw_thenDepositorsClaim() public {
         address dev = makeAddr("deployer");
         uint256 g0 = gasleft();
         vm.prank(dev); // the deployer is owner, fee recipient and beneficiary

@@ -1,4 +1,4 @@
-wallet,BUSD_pct_of_pool,BTCB_pct_of_pool,ETH_pct_of_pool,LINK_pct_of_pool,USDT_pct_of_pool,USDC_pct_of_pool,DOT_pct_of_pool
+depositor_wallet,BUSD_share_of_pool_percent,BTCB_share_of_pool_percent,ETH_share_of_pool_percent,LINK_share_of_pool_percent,USDT_share_of_pool_percent,USDC_share_of_pool_percent,DOT_share_of_pool_percent
 0x0249E4CDE13647c0d7C21Be66401c45EB448fD08,0.016469,,,,,,
 0x0282e055D3b2f7c0AD656952Ac1bB989FB6D0086,,0.527398,,,,,
 0x02a50E0aE5e8B53253Cd35FB869640371AEE3D85,0.988033,,,,,0.257316,

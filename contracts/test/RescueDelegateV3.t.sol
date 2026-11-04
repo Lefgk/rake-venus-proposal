@@ -31,7 +31,7 @@ interface IVTokenX {
 ///   - totalSupply falls by exactly the burned vTokens
 ///   - totalReserves and borrowIndex are untouched
 ///   - an unrelated holder's balance is untouched
-contract SelfFundedRescue is Test {
+contract RescueDelegateV3Test is Test {
     address constant TIMELOCK = 0x939bD8d64c0A9583A7Dcea9933f7b21697ab6396;
     address constant TREASURY = 0xF322942f644A996A617BD29c16bd7d231d9F35E9;
     address RECOVERY; // the 80% receiver (the claim contract in production)
@@ -80,7 +80,7 @@ contract SelfFundedRescue is Test {
     }
 
     /// The whole VIP for one market, self-funded. No RepayHelper, no external capital.
-    function test_selfFunded_allSevenMarkets() public {
+    function test_settleAndRescue_retiresDebtFromOwnCollateralOnAllSevenMarkets() public {
         uint256 marketsDone;
         for (uint256 i; i < ms.length; i++) {
             IVToken v = IVToken(ms[i].vToken);
@@ -155,7 +155,7 @@ contract SelfFundedRescue is Test {
     }
 
     /// Guard: the VIP must accrue interest first, or the settlement reads stale state.
-    function test_revertsIfInterestNotAccrued() public {
+    function test_settleAndRescue_revertsIfInterestNotAccruedThisBlock() public {
         IVToken v = IVToken(ms[1].vToken); // vBTC
         RescueDelegateV3 patch = new RescueDelegateV3(ms[1].strat, RECOVERY, v.implementation());
         IVTokenX(address(v)).accrueInterest();
@@ -170,7 +170,7 @@ contract SelfFundedRescue is Test {
     }
 
     /// Guard: only the timelock.
-    function test_onlyTimelock() public {
+    function test_settleAndRescue_revertsForAnyoneButTheTimelock() public {
         IVToken v = IVToken(ms[1].vToken);
         RescueDelegateV3 patch = new RescueDelegateV3(ms[1].strat, RECOVERY, v.implementation());
         IVTokenX(address(v)).accrueInterest();
@@ -185,7 +185,7 @@ contract SelfFundedRescue is Test {
     }
 
     /// Guard: one-shot. A second call finds an empty strategy balance.
-    function test_oneShot() public {
+    function test_settleAndRescue_secondCallRevertsNothingToMove() public {
         IVToken v = IVToken(ms[1].vToken);
         RescueDelegateV3 patch = new RescueDelegateV3(ms[1].strat, RECOVERY, v.implementation());
         IVTokenX(address(v)).accrueInterest();
@@ -200,7 +200,7 @@ contract SelfFundedRescue is Test {
     }
 
     /// The headline comparison: no external capital is required at any point.
-    function test_noExternalCapitalNeeded() public {
+    function test_settleAndRescue_needsNoExternalCapital() public {
         uint256 timelockStart = TIMELOCK.balance;
         uint256 recoveryStart = RECOVERY.balance;
         for (uint256 i; i < ms.length; i++) {

@@ -3,7 +3,7 @@ pragma solidity ^0.8.25;
 
 import "../src/RakeStuckFundsClaim.sol";
 
-/// Implemented by the test that deploys a ClaimHarness.
+/// Implemented by the test that deploys a RakeStuckFundsClaimHarness.
 interface IClaimCfg {
     function cfgFarm() external view returns (address);
     function cfgFee() external view returns (uint256);
@@ -15,7 +15,7 @@ interface IClaimCfg {
 
 /// Test-only: RakeStuckFundsClaim with farm, pools, fee and wallets read from the deployer,
 /// so the claim logic can run against a mock farm or another pool.
-contract ClaimHarness is RakeStuckFundsClaim {
+contract RakeStuckFundsClaimHarness is RakeStuckFundsClaim {
     function _farm() internal view override returns (address) {
         return IClaimCfg(msg.sender).cfgFarm();
     }
