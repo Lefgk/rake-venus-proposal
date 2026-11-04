@@ -2,7 +2,7 @@
 pragma solidity ^0.8.25;
 
 import "forge-std/Script.sol";
-import "./RakeFrozenPositions.sol";
+import "./libraries/RakeFrozenPositions.sol";
 
 interface IVTokenAmounts {
     function balanceOf(address) external view returns (uint256);

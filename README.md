@@ -19,6 +19,7 @@ flowchart LR
 | `contracts/script/RescueAmounts.s.sol` | Read-only: each position's net value and the 20/10/70 split, live from BSC |
 | `contracts/script/DeployRescueContracts.s.sol` | Deploys the claim contract + 7 rescue delegates, records them in `addresses.json` |
 | `contracts/script/VenusRescueProposal.s.sol` | Prints the proposal Venus submits: targets, values, signatures, calldatas |
+| `contracts/script/libraries/` | Shared by scripts and tests: the addresses, the deployment, the proposal's command list |
 | `contracts/test/` | One test file per script and per contract, same name |
 | Claim site | https://claim-frontend-one.vercel.app |
 

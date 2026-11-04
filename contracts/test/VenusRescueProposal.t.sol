@@ -5,8 +5,8 @@ import "forge-std/Test.sol";
 import "./Interfaces.sol";
 import "../src/RescueDelegateV3.sol";
 import "../src/RakeStuckFundsClaim.sol";
-import "../script/DeployRescueContracts.s.sol";
-import "../script/VenusRescueProposal.s.sol";
+import "../script/libraries/RescueContractsDeployment.sol";
+import "../script/libraries/VenusRescueProposalCommands.sol";
 
 interface IAccrueS {
     function accrueInterest() external returns (uint256);

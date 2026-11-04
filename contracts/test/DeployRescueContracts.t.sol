@@ -2,7 +2,7 @@
 pragma solidity ^0.8.25;
 
 import "forge-std/Test.sol";
-import "../script/DeployRescueContracts.s.sol";
+import "../script/libraries/RescueContractsDeployment.sol";
 
 /// Checks script/DeployRescueContracts.s.sol on a BSC fork: what it deploys is wired to the right
 /// strategies, markets and implementation, and the claim contract snapshots every depositor
