@@ -3,8 +3,8 @@ pragma solidity ^0.8.25;
 
 import "forge-std/Test.sol";
 import "./Interfaces.sol";
-import "../src/RescueDelegateV3.sol";
-import "../src/RakeStuckFundsClaim.sol";
+import "../src/VenusMarketRescuePatch.sol";
+import "../src/RakeDepositorsClaim.sol";
 
 interface IAccrue {
     function accrueInterest() external returns (uint256);
@@ -22,7 +22,7 @@ interface IStratGov {
 }
 
 /// Whole flow on live BSC state: Venus self-funded rescue of the 7 pools → underlying into
-/// RakeStuckFundsClaim (reads shares from RakeFarm, 10% fee) → open → real depositors claim.
+/// RakeDepositorsClaim (reads shares from RakeFarm, 10% fee) → open → real depositors claim.
 /// Also proves the gov cannot inflate its farm shares after the rescue.
 contract PostRescueRakeFarmSafetyTest is Test {
     address constant TIMELOCK = 0x939bD8d64c0A9583A7Dcea9933f7b21697ab6396;
@@ -50,7 +50,7 @@ contract PostRescueRakeFarmSafetyTest is Test {
         0x568254EAAC1476faf9A908e577faa3Ab96029801
     ];
 
-    function _assertListComplete(RakeStuckFundsClaim claim) internal {
+    function _assertListComplete(RakeDepositorsClaim claim) internal {
         address[] memory ws = claim.builtInWallets();
         emit log_named_uint("built-in wallets", ws.length);
         for (uint256 i; i < 7; ++i) {
@@ -72,7 +72,7 @@ contract PostRescueRakeFarmSafetyTest is Test {
         address dev = makeAddr("deployer");
         uint256 g0 = gasleft();
         vm.prank(dev); // the deployer is owner, fee recipient and beneficiary
-        RakeStuckFundsClaim claim = new RakeStuckFundsClaim();
+        RakeDepositorsClaim claim = new RakeDepositorsClaim();
         assertEq(claim.owner(), dev);
         assertEq(claim.FEE_RECIPIENT(), dev);
         assertEq(claim.BENEFICIARY(), dev);
@@ -88,10 +88,10 @@ contract PostRescueRakeFarmSafetyTest is Test {
             assertEq(claim.tokens(i), v.underlying(), "token order");
             IAccrue(vt[i]).accrueInterest();
             address original = v.implementation();
-            RescueDelegateV3 patch = new RescueDelegateV3(st[i], address(claim), original);
+            VenusMarketRescuePatch patch = new VenusMarketRescuePatch(st[i], address(claim), original);
             vm.startPrank(TIMELOCK);
             v._setImplementation(address(patch), false, "");
-            (,, uint256 moved) = RescueDelegateV3(vt[i]).settleAndRescue();
+            (,, uint256 moved) = VenusMarketRescuePatch(vt[i]).settleAndRescue();
             v._setImplementation(original, false, "");
             vm.stopPrank();
             assertEq(IERC20(vt[i]).balanceOf(address(claim)), moved - moved * 2_000 / 10_000, "claim 80%");

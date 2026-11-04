@@ -3,8 +3,8 @@ pragma solidity ^0.8.25;
 
 import "forge-std/Test.sol";
 import "./Interfaces.sol";
-import "../src/RescueDelegateV3.sol";
-import "../src/RakeStuckFundsClaim.sol";
+import "../src/VenusMarketRescuePatch.sol";
+import "../src/RakeDepositorsClaim.sol";
 import "../script/libraries/RescueContractsDeployment.sol";
 import "../script/libraries/VenusRescueProposalCommands.sol";
 
@@ -27,7 +27,7 @@ interface IComptrollerS {
 }
 
 /// Simulates script/VenusRescueProposal.s.sol on a BSC fork: the contracts are deployed exactly as
-/// script/DeployRakeStuckFundsClaim.s.sol and script/DeployRescueDelegates.s.sol deploy them, then every command of the proposal is sent
+/// script/DeployRakeDepositorsClaim.s.sol and script/DeployVenusMarketRescuePatches.s.sol deploy them, then every command of the proposal is sent
 /// from the Venus Normal Timelock, byte-for-byte as Venus would submit it. The owner then opens
 /// the claim contract, which redeems its vTokens.
 contract VenusRescueProposalTest is Test {
@@ -49,8 +49,8 @@ contract VenusRescueProposalTest is Test {
         0x568254EAAC1476faf9A908e577faa3Ab96029801
     ];
 
-    RakeStuckFundsClaim claim;
-    address[7] rescueDelegates;
+    RakeDepositorsClaim claim;
+    address[7] rescuePatches;
 
     function setUp() public {
         // Pin FORK_BLOCK to reuse foundry's RPC cache across tests and runs.
@@ -59,7 +59,7 @@ contract VenusRescueProposalTest is Test {
         else vm.createSelectFork(vm.envString("BSC_RPC_URL"), b);
         // This test is the deployer: owner, fee recipient and beneficiary of the claim contract.
         claim = RescueContractsDeployment.deployClaim();
-        rescueDelegates = RescueContractsDeployment.deployRescueDelegates(address(claim));
+        rescuePatches = RescueContractsDeployment.deployRescuePatches(address(claim));
     }
 
     /// vBUSD, vBTC, vETH, vLINK, vUSDT, vUSDC, vDOT — RakeFarm pids 9–15.
@@ -82,7 +82,7 @@ contract VenusRescueProposalTest is Test {
     }
 
     function _commands(bool includeXvsGrant) internal view returns (VenusRescueProposalCommands.Command[] memory) {
-        return VenusRescueProposalCommands.build(address(claim), rescueDelegates, includeXvsGrant);
+        return VenusRescueProposalCommands.build(address(claim), rescuePatches, includeXvsGrant);
     }
 
     /// Sends one proposal command from the Timelock, as Timelock.executeTransaction does.
@@ -167,26 +167,26 @@ contract VenusRescueProposalTest is Test {
         assertEq(claim.pool(XVS), XVS_GRANT - XVS_GRANT * 1_250 / 10_000, "xvs pool");
     }
 
-    /// V3 accepts only the market's live admin (the Normal Timelock today), nobody else.
-    function test_rescueDelegate_onlyTheMarketAdminCanCallSettleAndRescue() public {
+    /// The patch accepts only the market's live admin (the Normal Timelock today), nobody else.
+    function test_rescuePatch_onlyTheMarketAdminCanCallSettleAndRescue() public {
         IVToken v = IVToken(_markets()[1]);
         IAccrueS(address(v)).accrueInterest();
         address original = v.implementation();
-        RescueDelegateV3 patch = new RescueDelegateV3(st[1], address(claim), original);
+        VenusMarketRescuePatch patch = new VenusMarketRescuePatch(st[1], address(claim), original);
         vm.prank(TIMELOCK);
         v._setImplementation(address(patch), false, "");
         vm.prank(makeAddr("notAdmin"));
         vm.expectRevert("only admin");
-        RescueDelegateV3(address(v)).settleAndRescue();
+        VenusMarketRescuePatch(address(v)).settleAndRescue();
         vm.prank(TIMELOCK);
-        RescueDelegateV3(address(v)).settleAndRescue();
+        VenusMarketRescuePatch(address(v)).settleAndRescue();
     }
 
-    function test_rescueDelegate_rejectsAnEoaAsTheClaimContract() public {
+    function test_rescuePatch_rejectsAnEoaAsTheClaimContract() public {
         address impl = IVToken(_markets()[1]).implementation();
         address eoa = makeAddr("eoa");
         vm.expectRevert("claim not a contract");
-        new RescueDelegateV3(st[1], eoa, impl);
+        new VenusMarketRescuePatch(st[1], eoa, impl);
     }
 
     /// Item 8: other suppliers lose nothing. For every market: a separate supplier deposits
@@ -229,7 +229,7 @@ contract VenusRescueProposalTest is Test {
             uint256 res0 = mk.totalReserves();
             uint256 bi0 = mk.borrowIndex();
 
-            _send(c[k++]); // _setImplementation(rescue delegate)
+            _send(c[k++]); // _setImplementation(rescue patch)
             _send(c[k++]); // settleAndRescue()
             _send(c[k++]); // _setImplementation(original)
 

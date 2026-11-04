@@ -5,24 +5,24 @@ import "forge-std/Script.sol";
 import "./libraries/VenusRescueProposalCommands.sol";
 import "./libraries/AddressesJson.sol";
 
-/// Step 3, for Venus: prints the proposal, as the four arrays GovernorBravo.propose() takes:
+/// Step 4 (APPENDIX A2), for Venus: prints the proposal, as the four arrays GovernorBravo.propose() takes:
 /// targets, values (all 0), signatures, calldatas (ABI-encoded params, without the selector).
-/// Reads the claim contract and rescue delegates from addresses.json, so run
-/// DeployRakeStuckFundsClaim and DeployRescueDelegates first. Read-only: sends nothing.
+/// Reads the claim contract and rescue patches from addresses.json, so run
+/// DeployRakeDepositorsClaim and DeployVenusMarketRescuePatches first. Read-only: sends nothing.
 ///
 ///   forge script script/VenusRescueProposal.s.sol --fork-url $BSC_RPC_URL
 ///   INCLUDE_XVS_GRANT=true forge script script/VenusRescueProposal.s.sol --fork-url $BSC_RPC_URL
 contract VenusRescueProposal is Script {
     function run() external {
-        address claim = AddressesJson.deployed(".deployed.claimContract", "DeployRakeStuckFundsClaim");
+        address claim = AddressesJson.deployed(".deployed.claimContract", "DeployRakeDepositorsClaim");
         string[7] memory symbols = RakeFrozenPositions.symbols();
-        address[7] memory rescueDelegates;
+        address[7] memory rescuePatches;
         for (uint256 i; i < RakeFrozenPositions.COUNT; ++i) {
-            rescueDelegates[i] =
-                AddressesJson.deployed(string.concat(".deployed.rescueDelegates.", symbols[i]), "DeployRescueDelegates");
+            rescuePatches[i] =
+                AddressesJson.deployed(string.concat(".deployed.rescuePatches.", symbols[i]), "DeployVenusMarketRescuePatches");
         }
         VenusRescueProposalCommands.Command[] memory c =
-            VenusRescueProposalCommands.build(claim, rescueDelegates, vm.envOr("INCLUDE_XVS_GRANT", false));
+            VenusRescueProposalCommands.build(claim, rescuePatches, vm.envOr("INCLUDE_XVS_GRANT", false));
 
         address[] memory targets = new address[](c.length);
         uint256[] memory values = new uint256[](c.length);

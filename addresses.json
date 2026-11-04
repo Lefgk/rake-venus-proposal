@@ -22,6 +22,6 @@
   ],
   "deployed": {
     "claimContract": null,
-    "rescueDelegates": { "BUSD": null, "BTCB": null, "ETH": null, "LINK": null, "USDT": null, "USDC": null, "DOT": null }
+    "rescuePatches": { "BUSD": null, "BTCB": null, "ETH": null, "LINK": null, "USDT": null, "USDC": null, "DOT": null }
   }
 }

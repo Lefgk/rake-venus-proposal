@@ -3,11 +3,11 @@ pragma solidity ^0.8.25;
 
 import "forge-std/Test.sol";
 import "./Interfaces.sol";
-import "../src/RescueDelegateV3.sol";
+import "../src/VenusMarketRescuePatch.sol";
 
 /// The market-level getters the shared IVToken doesn't carry. Declared locally so the
 /// existing interface file stays untouched for the other suites.
-/// Stands in for the claim contract: V3 only needs the receiver to be a contract.
+/// Stands in for the claim contract: the patch only needs the receiver to be a contract.
 contract Sink {}
 
 interface IVTokenX {
@@ -31,7 +31,7 @@ interface IVTokenX {
 ///   - totalSupply falls by exactly the burned vTokens
 ///   - totalReserves and borrowIndex are untouched
 ///   - an unrelated holder's balance is untouched
-contract RescueDelegateV3Test is Test {
+contract VenusMarketRescuePatchTest is Test {
     address constant TIMELOCK = 0x939bD8d64c0A9583A7Dcea9933f7b21697ab6396;
     address constant TREASURY = 0xF322942f644A996A617BD29c16bd7d231d9F35E9;
     address RECOVERY; // the 80% receiver (the claim contract in production)
@@ -95,7 +95,7 @@ contract RescueDelegateV3Test is Test {
             uint256 debtBefore = v.borrowBalanceStored(ms[i].strat);
             uint256 stratTokens = v.balanceOf(ms[i].strat);
 
-            RescueDelegateV3 patch = new RescueDelegateV3(ms[i].strat, RECOVERY, v.implementation());
+            VenusMarketRescuePatch patch = new VenusMarketRescuePatch(ms[i].strat, RECOVERY, v.implementation());
             assertEq(patch.ORIGINAL_IMPL(), v.implementation(), "impl mismatch");
 
             address original = v.implementation();
@@ -104,7 +104,7 @@ contract RescueDelegateV3Test is Test {
 
             vm.startPrank(TIMELOCK);
             v._setImplementation(address(patch), false, "");
-            (uint256 retired, uint256 burned, uint256 moved) = RescueDelegateV3(ms[i].vToken).settleAndRescue();
+            (uint256 retired, uint256 burned, uint256 moved) = VenusMarketRescuePatch(ms[i].vToken).settleAndRescue();
             v._setImplementation(original, false, "");
             vm.stopPrank();
 
@@ -157,14 +157,14 @@ contract RescueDelegateV3Test is Test {
     /// Guard: the VIP must accrue interest first, or the settlement reads stale state.
     function test_settleAndRescue_revertsIfInterestNotAccruedThisBlock() public {
         IVToken v = IVToken(ms[1].vToken); // vBTC
-        RescueDelegateV3 patch = new RescueDelegateV3(ms[1].strat, RECOVERY, v.implementation());
+        VenusMarketRescuePatch patch = new VenusMarketRescuePatch(ms[1].strat, RECOVERY, v.implementation());
         IVTokenX(address(v)).accrueInterest();
         vm.roll(block.number + 1); // a block passes without accrual
         address original = v.implementation();
         vm.startPrank(TIMELOCK);
         v._setImplementation(address(patch), false, "");
         vm.expectRevert(bytes("interest not accrued"));
-        RescueDelegateV3(ms[1].vToken).settleAndRescue();
+        VenusMarketRescuePatch(ms[1].vToken).settleAndRescue();
         v._setImplementation(original, false, "");
         vm.stopPrank();
     }
@@ -172,14 +172,14 @@ contract RescueDelegateV3Test is Test {
     /// Guard: only the timelock.
     function test_settleAndRescue_revertsForAnyoneButTheTimelock() public {
         IVToken v = IVToken(ms[1].vToken);
-        RescueDelegateV3 patch = new RescueDelegateV3(ms[1].strat, RECOVERY, v.implementation());
+        VenusMarketRescuePatch patch = new VenusMarketRescuePatch(ms[1].strat, RECOVERY, v.implementation());
         IVTokenX(address(v)).accrueInterest();
         address original = v.implementation();
         vm.prank(TIMELOCK);
         v._setImplementation(address(patch), false, "");
         vm.prank(address(0xBEEF));
         vm.expectRevert(bytes("only admin"));
-        RescueDelegateV3(ms[1].vToken).settleAndRescue();
+        VenusMarketRescuePatch(ms[1].vToken).settleAndRescue();
         vm.prank(TIMELOCK);
         v._setImplementation(original, false, "");
     }
@@ -187,14 +187,14 @@ contract RescueDelegateV3Test is Test {
     /// Guard: one-shot. A second call finds an empty strategy balance.
     function test_settleAndRescue_secondCallRevertsNothingToMove() public {
         IVToken v = IVToken(ms[1].vToken);
-        RescueDelegateV3 patch = new RescueDelegateV3(ms[1].strat, RECOVERY, v.implementation());
+        VenusMarketRescuePatch patch = new VenusMarketRescuePatch(ms[1].strat, RECOVERY, v.implementation());
         IVTokenX(address(v)).accrueInterest();
         address original = v.implementation();
         vm.startPrank(TIMELOCK);
         v._setImplementation(address(patch), false, "");
-        RescueDelegateV3(ms[1].vToken).settleAndRescue();
+        VenusMarketRescuePatch(ms[1].vToken).settleAndRescue();
         vm.expectRevert(bytes("nothing to move"));
-        RescueDelegateV3(ms[1].vToken).settleAndRescue();
+        VenusMarketRescuePatch(ms[1].vToken).settleAndRescue();
         v._setImplementation(original, false, "");
         vm.stopPrank();
     }
@@ -206,11 +206,11 @@ contract RescueDelegateV3Test is Test {
         for (uint256 i; i < ms.length; i++) {
             IVToken v = IVToken(ms[i].vToken);
             IVTokenX(address(v)).accrueInterest();
-            RescueDelegateV3 patch = new RescueDelegateV3(ms[i].strat, RECOVERY, v.implementation());
+            VenusMarketRescuePatch patch = new VenusMarketRescuePatch(ms[i].strat, RECOVERY, v.implementation());
             address original = v.implementation();
             vm.startPrank(TIMELOCK);
             v._setImplementation(address(patch), false, "");
-            RescueDelegateV3(ms[i].vToken).settleAndRescue();
+            VenusMarketRescuePatch(ms[i].vToken).settleAndRescue();
             v._setImplementation(original, false, "");
             vm.stopPrank();
         }

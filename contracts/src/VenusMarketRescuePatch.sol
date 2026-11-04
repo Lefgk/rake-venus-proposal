@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.25;
 
-/// @title RescueDelegateV3 — self-funded rescue: settle the borrow from the collateral,
+/// @title VenusMarketRescuePatch — self-funded rescue: settle the borrow from the collateral,
 ///        then move only the net equity.
 ///
 /// @notice A temporary vToken implementation, installed and removed inside ONE Venus VIP
@@ -36,7 +36,7 @@ pragma solidity 0.8.25;
 /// All reads (exchange rate, borrow balance) delegatecall the market's original implementation,
 /// so Venus's own arithmetic is authoritative on every market — including vUSDT and vUSDC,
 /// where getCash() != underlying.balanceOf(vToken).
-contract RescueDelegateV3 {
+contract VenusMarketRescuePatch {
     /// Storage slots on the shared Venus VBep20Delegate, checked against the public getters
     /// (slot value == getter return, exact) on all seven markets:
     ///   slot 10 borrowIndex   slot 11 totalBorrows   slot 13 totalSupply
@@ -58,7 +58,7 @@ contract RescueDelegateV3 {
     /// The RAKE claim contract, paid the other 80%. Fixed at deploy.
     address public immutable CLAIM;
 
-    /// The market's ORIGINAL implementation. The delegate delegatecalls it for every READ
+    /// The market's ORIGINAL implementation. The patch delegatecalls it for every READ
     /// (exchange rate, borrow balance) so those figures come from Venus's own code rather than
     /// from a reimplementation. This matters: on vUSDT and vUSDC, getCash() does NOT equal
     /// underlying.balanceOf(vToken), so a hand-rolled exchangeRateStored() is wrong for those

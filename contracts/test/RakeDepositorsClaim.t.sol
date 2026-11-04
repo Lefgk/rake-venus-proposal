@@ -2,7 +2,7 @@
 pragma solidity ^0.8.25;
 
 import "forge-std/Test.sol";
-import "./RakeStuckFundsClaimHarness.sol";
+import "./RakeDepositorsClaimHarness.sol";
 
 contract ClaimMockToken {
     uint8 public immutable decimals;
@@ -64,8 +64,8 @@ contract MockFarm {
     }
 }
 
-contract RakeStuckFundsClaimTest is Test, IClaimCfg {
-    RakeStuckFundsClaimHarness c;
+contract RakeDepositorsClaimTest is Test, IClaimCfg {
+    RakeDepositorsClaimHarness c;
     MockFarm farm;
     MockStrat sUsdc;
     MockStrat sBtc;
@@ -128,7 +128,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
         pids = [14, 10];
         xvs = new ClaimMockToken(18);
         xvsWeights = [3, 1]; // the USDC strategy earned 3x the XVS of the BTC one
-        c = new RakeStuckFundsClaimHarness();
+        c = new RakeDepositorsClaimHarness();
     }
 
     function _fundAndOpen(uint256 usdcAmt, uint256 btcAmt) internal {
@@ -251,7 +251,7 @@ contract RakeStuckFundsClaimTest is Test, IClaimCfg {
 
     function test_constructor_recordsTheBuiltInDepositorWallets() public {
         wallets = [alice];
-        RakeStuckFundsClaimHarness c2 = new RakeStuckFundsClaimHarness();
+        RakeDepositorsClaimHarness c2 = new RakeDepositorsClaimHarness();
         assertTrue(c2.recorded(alice));
         assertEq(c2.snapshot(alice, address(usdc)), ALICE_USDC);
         assertEq(c2.snapshot(alice, address(btc8)), ALICE_BTC);

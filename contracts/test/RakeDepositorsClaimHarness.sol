@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.25;
 
-import "../src/RakeStuckFundsClaim.sol";
+import "../src/RakeDepositorsClaim.sol";
 
-/// Implemented by the test that deploys a RakeStuckFundsClaimHarness.
+/// Implemented by the test that deploys a RakeDepositorsClaimHarness.
 interface IClaimCfg {
     function cfgFarm() external view returns (address);
     function cfgFee() external view returns (uint256);
@@ -13,9 +13,9 @@ interface IClaimCfg {
     function cfgXvsWeights() external view returns (uint256[] memory);
 }
 
-/// Test-only: RakeStuckFundsClaim with farm, pools, fee and wallets read from the deployer,
+/// Test-only: RakeDepositorsClaim with farm, pools, fee and wallets read from the deployer,
 /// so the claim logic can run against a mock farm or another pool.
-contract RakeStuckFundsClaimHarness is RakeStuckFundsClaim {
+contract RakeDepositorsClaimHarness is RakeDepositorsClaim {
     function _farm() internal view override returns (address) {
         return IClaimCfg(msg.sender).cfgFarm();
     }

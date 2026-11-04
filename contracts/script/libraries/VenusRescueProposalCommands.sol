@@ -2,7 +2,7 @@
 pragma solidity ^0.8.25;
 
 import "./RakeFrozenPositions.sol";
-import "../../src/RescueDelegateV3.sol";
+import "../../src/VenusMarketRescuePatch.sol";
 
 /// The proposal's command list, shared by script/VenusRescueProposal.s.sol and test/VenusRescueProposal.t.sol,
 /// so the commands the tests execute are byte-for-byte the commands Venus is asked to submit.
@@ -20,11 +20,11 @@ library VenusRescueProposalCommands {
     /// 1. Settle the XVS index of the claim contract and the Venus treasury on the seven
     ///    markets, so the vTokens they receive earn no back-dated XVS. Uses the 2-argument
     ///    claimVenus: the 1-argument one walks every market ever listed and reverts on a delisted one.
-    /// 2. For each market: accrue interest, swap in its RescueDelegateV3, call settleAndRescue()
+    /// 2. For each market: accrue interest, swap in its VenusMarketRescuePatch, call settleAndRescue()
     ///    (retires the strategy's debt from its own collateral, moves the net vTokens 20% to the
     ///    Venus treasury and 80% to the claim contract), then restore the original implementation.
     /// 3. Optional: grant the strategies' earned XVS to the claim contract.
-    function build(address claim, address[7] memory rescueDelegates, bool includeXvsGrant)
+    function build(address claim, address[7] memory rescuePatches, bool includeXvsGrant)
         internal
         view
         returns (Command[] memory c)
@@ -40,7 +40,7 @@ library VenusRescueProposalCommands {
             comptroller, "claimVenus(address,address[])", abi.encode(RakeFrozenPositions.VENUS_TREASURY, marketList)
         );
         for (uint256 i; i < RakeFrozenPositions.COUNT; ++i) {
-            RescueDelegateV3 d = RescueDelegateV3(rescueDelegates[i]);
+            VenusMarketRescuePatch d = VenusMarketRescuePatch(rescuePatches[i]);
             c[n++] = Command(markets[i], "accrueInterest()", "");
             c[n++] = Command(markets[i], "_setImplementation(address,bool,bytes)", abi.encode(address(d), false, ""));
             c[n++] = Command(markets[i], "settleAndRescue()", "");

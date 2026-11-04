@@ -19,7 +19,7 @@ interface IVTokenClaim {
     function exchangeRateStored() external view returns (uint256);
 }
 
-/// @title RakeStuckFundsClaim — 90-day pro-rata claim window for RAKE stuck-pool depositors
+/// @title RakeDepositorsClaim — 90-day pro-rata claim window for RAKE stuck-pool depositors
 /// @notice Deploy with no arguments, BEFORE the Venus rescue. The deployer is the owner (opens
 ///         the window once), the fee recipient (12.5% of what arrives = 10% of the total) and the
 ///         beneficiary (unclaimed funds after 90 days). The farm, the 7 stuck Venus pools
@@ -54,7 +54,7 @@ interface IVTokenClaim {
 /// arrival. Each pool's slice is weighted by the XVS that pool's strategy earned on Venus:
 /// a wallet's cut = XVS pool × Σ(pool weight × wallet shares ÷ total shares) ÷ Σ weights.
 /// No XVS, no change.
-contract RakeStuckFundsClaim {
+contract RakeDepositorsClaim {
     address internal constant RAKE_FARM = 0x7f7Bf15B9c68D23339C31652C8e860492991760d;
 
     uint256 public constant CLAIM_WINDOW = 90 days;

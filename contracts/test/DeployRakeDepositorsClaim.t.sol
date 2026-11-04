@@ -4,11 +4,11 @@ pragma solidity ^0.8.25;
 import "forge-std/Test.sol";
 import "../script/libraries/RescueContractsDeployment.sol";
 
-/// Checks script/DeployRakeStuckFundsClaim.s.sol on a BSC fork: the claim contract is owned by its
+/// Checks script/DeployRakeDepositorsClaim.s.sol on a BSC fork: the claim contract is owned by its
 /// deployer, lists the seven underlyings in market order, and snapshots every depositor before
 /// any rescue runs.
-contract DeployRakeStuckFundsClaimTest is Test {
-    RakeStuckFundsClaim claim;
+contract DeployRakeDepositorsClaimTest is Test {
+    RakeDepositorsClaim claim;
 
     function setUp() public {
         uint256 b = vm.envOr("FORK_BLOCK", uint256(0));
