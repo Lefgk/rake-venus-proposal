@@ -11,7 +11,7 @@ We are asking Venus to approve one atomic transaction that does three things:
 
 1. It settles the frozen positions' debt against their own collateral, at no cost to other Venus suppliers.
 2. It pays Venus a 20% recovery fee.
-3. It sends the remainder to a claim contract, which keeps 10% of the total as recovery cost *(Appendix A6)*, and where each original depositor can withdraw their share directly from their own wallet.
+3. It sends the remainder to a claim contract, which keeps 10% of the total as recovery cost *(Appendix [A6](APPENDIX.md#a6-recovery-cost-10))*, and where each original depositor can withdraw their share directly from their own wallet.
 
 Once the funds have arrived, the claim contract's deployer opens a 90-day claim window.
 
@@ -20,7 +20,7 @@ Neither we nor anyone else holds the funds at any point. They move from the froz
 **At a glance:**
 - Funds frozen, net of debt: about $1,074,900 (BSC block 131,610,085, 4 Nov 2026, Venus oracle prices)
 - Venus recovery fee, 20%: about $214,980
-- Recovery cost, 10%: about $107,490 *(Appendix A6)*
+- Recovery cost, 10%: about $107,490 *(Appendix [A6](APPENDIX.md#a6-recovery-cost-10))*
 - Available to depositors, 70%: about $752,430
 - Affected depositor wallets: 103
 - Claim window: 90 days from when the window is opened
@@ -34,7 +34,7 @@ About an hour and twenty minutes after launch, we noticed a minor issue on the w
 
 The strategy code was based on an outdated copy of AutoFarm's leveraged Venus strategy. In that copy, the function that un-pauses a vault restores most of its permissions but leaves one of them, the permission to interact with its Venus market, switched off. Once the vaults were un-paused, none of the seven could supply, repay or withdraw. The funds were frozen.
 
-We hold the owner keys to these contracts, and they do not help. The contracts have no function that can turn the permission back on, they cannot be upgraded, and the emergency function deliberately excludes the exact tokens involved. We have tested every available route, including deliberately triggering liquidation of our own positions, and none of them works. *(Appendix A1.)*
+We hold the owner keys to these contracts, and they do not help. The contracts have no function that can turn the permission back on, they cannot be upgraded, and the emergency function deliberately excludes the exact tokens involved. We have tested every available route, including deliberately triggering liquidation of our own positions, and none of them works. *(Appendix [A1](APPENDIX.md#a1-the-bug-and-why-there-is-no-owner-side-fix).)*
 
 The only party that can still act is Venus, which controls the market contracts holding these positions.
 
@@ -54,7 +54,7 @@ The result can be checked on-chain today:
 
 These coverage figures value each frozen position at 24 July 2026 prices (BSC block 114,966,322). The summary figures above use today's prices; each wallet's share of the recovery does not depend on either.
 
-Most affected depositors therefore did not lose money from the freeze, and many came out ahead, because the founder gave up the compensation that would otherwise have been paid out. *(Appendix A4.)*
+Most affected depositors therefore did not lose money from the freeze, and many came out ahead, because the founder gave up the compensation that would otherwise have been paid out. *(Appendix [A4](APPENDIX.md#a4-the-2021-compensation-data).)*
 
 ## 3. Why now
 
@@ -72,7 +72,7 @@ It is also urgent. Every month of delay costs money:
 
 The recovery happens entirely inside one Venus governance transaction. For each of the seven markets, Venus temporarily installs a narrowly scoped contract. That contract settles the frozen position's debt using the position's own collateral and moves what remains out of the frozen account, and then the original Venus contract is restored, all within the same transaction. The same contract sends 20% of what it moves to the Venus treasury and the rest to the claim contract, as Venus market tokens (vTokens). The claim contract converts its share back to the original tokens when the claim window opens.
 
-Settling the debt this way costs other Venus suppliers nothing. The market's exchange rate and cash are unchanged, and the contract is built to fail if that is ever not true. *(Appendix A2 and A5.)*
+Settling the debt this way costs other Venus suppliers nothing. The market's exchange rate and cash are unchanged, and the contract is built to fail if that is ever not true. *(Appendix [A2](APPENDIX.md#a2-the-rescue-one-vip-transaction) and [A5](APPENDIX.md#a5-tests-and-reproduction).)*
 
 No capital has to be advanced, nobody has to be trusted to forward funds afterwards, and if any step fails, the entire transaction reverts and nothing moves.
 
@@ -82,12 +82,12 @@ No capital has to be advanced, nobody has to be trusted to forward funds afterwa
 
 The claim contract records, at deployment, each of the 103 affected wallets and its share of each frozen pool, taken directly from RAKE's farm contract. Nobody types in an amount.
 
-Each depositor claims by calling the contract from the same wallet they deposited with. They receive their share of each pool in the original token (BTC, ETH, USDC and so on), not converted to a dollar figure. The per-wallet table, each wallet's percentage of each pool, is published in this repo so every depositor can check their own share. Token amounts follow from it on the day the funds arrive. *(Appendix A3.)*
+Each depositor claims by calling the contract from the same wallet they deposited with. They receive their share of each pool in the original token (BTC, ETH, USDC and so on), not converted to a dollar figure. The per-wallet table, each wallet's percentage of each pool, is published in this repo so every depositor can check their own share. Token amounts follow from it on the day the funds arrive. *(Appendix [A3](APPENDIX.md#a3-the-claim-contract).)*
 
 ### Fees
 
 - **Venus, 20%**, for the governance action and for taking on the review.
-- **Recovery cost, 10%** *(Appendix A6)*.
+- **Recovery cost, 10%** *(Appendix [A6](APPENDIX.md#a6-recovery-cost-10))*.
 - **Depositors, 70%**, claimable in full by every affected wallet.
 
 Neither fee depends on how many depositors claim.
@@ -155,9 +155,9 @@ We are aware that a previous recovery of this kind, AutoFarm's, damaged trust: f
 
 The full technical appendix is in [APPENDIX.md](APPENDIX.md):
 
-- **A1:** the bug, and why there is no owner-side fix
-- **A2:** the rescue, one VIP transaction
-- **A3:** the claim contract, with the per-wallet table in [depositor_share_of_each_frozen_pool.csv](data/depositor_share_of_each_frozen_pool.csv)
-- **A4:** the 2021 compensation data
-- **A5:** tests and reproduction
-- **A6:** the 10% recovery cost
+- **[A1](APPENDIX.md#a1-the-bug-and-why-there-is-no-owner-side-fix):** the bug, and why there is no owner-side fix
+- **[A2](APPENDIX.md#a2-the-rescue-one-vip-transaction):** the rescue, one VIP transaction
+- **[A3](APPENDIX.md#a3-the-claim-contract):** the claim contract, with the per-wallet table in [depositor_share_of_each_frozen_pool.csv](data/depositor_share_of_each_frozen_pool.csv)
+- **[A4](APPENDIX.md#a4-the-2021-compensation-data):** the 2021 compensation data
+- **[A5](APPENDIX.md#a5-tests-and-reproduction):** tests and reproduction
+- **[A6](APPENDIX.md#a6-recovery-cost-10):** the 10% recovery cost
