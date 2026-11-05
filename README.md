@@ -32,6 +32,6 @@ forge script script/RescueAmounts.s.sol --fork-url $BSC_RPC_URL           # what
 forge script script/DeployRakeDepositorsClaim.s.sol --fork-url $BSC_RPC_URL   # RAKE deploy, dry run (needs $PRIVATE_KEY)
 forge script script/DeployVenusMarketRescuePatches.s.sol --fork-url $BSC_RPC_URL       # Venus deploy, dry run (needs $PRIVATE_KEY)
 forge script script/VenusRescueProposal.s.sol --fork-url $BSC_RPC_URL     # the proposal's commands
-forge test --match-contract RakeDepositorsClaimTest                       # no RPC
+forge test --match-contract '^RakeDepositorsClaimTest$'                   # no RPC
 forge test                                                                # all, on a BSC fork
 ```

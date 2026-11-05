@@ -62,7 +62,7 @@ ER = (cash + borrows − reserves) / supply
 - **Timelock:** the Normal Timelock (48 h delay) is the admin of all seven vTokens, so the VIP must run through it.
 - **Storage writes:** The patch writes the market's storage directly and skips the comptroller hooks (XVS indexes, Prime). That is safe here because both receivers' XVS is settled first and none of the strategies is a Prime holder.
 - **XVS:** because both receivers' XVS is settled first, the recovery earns 0 XVS. Without that step, about 3,246 XVS of back-dated rewards would be credited to the claim contract.
-- **Addresses to verify before the vote:** the 7 strategies, the 7 markets, the 7 rescue contracts, the treasury and the claim contract. RAKE supplies the claim contract address once terms are agreed.
+- **Addresses to verify before the vote:** the 7 strategies, the 7 markets, the 7 rescue patches, the treasury and the claim contract. RAKE supplies the claim contract address once terms are agreed; Venus deploys the 7 rescue patches bound to it.
 
 ### Who does what, when
 
@@ -78,7 +78,7 @@ sequenceDiagram
     V->>V: 5. VIP executes (48 h timelock): settle XVS, rescue 7 markets, optional XVS grant
     R->>R: 6. open(): redeem vTokens, take 10%, start the 90 days
     D->>D: 7. claim() from their own wallets, 90 days
-    R->>R: 8. sweep(): leftovers to the owner after the window
+    D->>R: 8. sweep() by anyone after the window: leftovers to the owner
 ```
 
 | Step | Who | Needs |
@@ -148,7 +148,7 @@ pie title Wallets by 25-Mar-2021 coverage (101 measured)
 ```
 cd contracts
 forge install foundry-rs/forge-std --no-git
-forge test --match-contract RakeDepositorsClaimTest                       # unit, no RPC
+forge test --match-contract '^RakeDepositorsClaimTest$'                   # unit, no RPC
 FORK_BLOCK=<block> BSC_RPC_URL=<BSC archive RPC> forge test                # everything, on a BSC fork
 
 forge script script/RescueAmounts.s.sol --fork-url $BSC_RPC_URL --fork-block-number 131610085

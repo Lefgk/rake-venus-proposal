@@ -78,13 +78,13 @@ Settling the debt this way costs other Venus suppliers nothing. The market's exc
 
 No capital has to be advanced, nobody has to be trusted to forward funds afterwards, and if any step fails, the entire transaction reverts and nothing moves.
 
-**We will give Venus the claim contract address once terms are agreed.** It is fixed inside the rescue contract. Before the vote, Venus should check every address the transaction touches: the seven strategy positions, the seven markets, the rescue contract, the Venus treasury that receives the 20%, and the claim contract.
+**We will give Venus the claim contract address once terms are agreed.** Venus then deploys the seven rescue patches, each with that address fixed inside it. Before the vote, Venus should check every address the transaction touches: the seven strategy positions, the seven markets, the rescue contract, the Venus treasury that receives the 20%, and the claim contract.
 
 ### How depositors claim
 
 The claim contract records, at deployment, each of the 103 affected wallets and its share of each frozen pool, taken directly from RAKE's farm contract. Nobody types in an amount.
 
-Each depositor claims by calling the contract from the same wallet they deposited with. They receive their share of each pool in the original token (BTC, ETH, USDC and so on), not converted to a dollar figure. The per-wallet table, each wallet's percentage of each pool, will be published before the vote so every depositor can check their own share. Token amounts follow from it on the day the funds arrive. *(Appendix A3.)*
+Each depositor claims by calling the contract from the same wallet they deposited with. They receive their share of each pool in the original token (BTC, ETH, USDC and so on), not converted to a dollar figure. The per-wallet table, each wallet's percentage of each pool, is published in this repo so every depositor can check their own share. Token amounts follow from it on the day the funds arrive. *(Appendix A3.)*
 
 ### Fees
 
