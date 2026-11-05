@@ -109,7 +109,7 @@ We expect a significant portion to go unclaimed, and we are saying so plainly ra
 
 So that the 90 days is a real window and not a formality, we will:
 
-- announce the vote and the claim window on the Venus governance forum, in the Forex Shark Calls Telegram channel (@forexsharkcalls), which announced RAKE, on the owner's X account and in the owner's Telegram group;
+- announce the vote and the claim window on the Venus governance forum, in the Forex Shark Calls Telegram channel (@forexsharkcalls), which announced RAKE, on the owner's X account (https://x.com/F0r3x_Shark) and in the owner's Telegram group;
 - send an on-chain message to each of the 103 depositing wallets when the window opens: a zero-value transaction whose data carries the claim link and the deadline, visible on BscScan; and
 - publish the opening and closing dates on the claim page: https://rakeclaim.com
 
