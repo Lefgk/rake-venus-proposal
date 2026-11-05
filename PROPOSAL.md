@@ -20,7 +20,7 @@ Neither we nor anyone else holds the funds at any point. They move from the froz
 **At a glance:**
 - Funds frozen, net of debt: about $1,074,900 (BSC block 131,610,085, 4 Nov 2026, Venus oracle prices)
 - Venus recovery fee, 20%: about $214,980
-- Founder fee, 10%: about $107,490, for the significant time and effort spent gathering the on-chain data, researching the case and preparing this report
+- Founder fee, 10%: about $107,490, recovery cost
 - Available to depositors, 70%: about $752,430
 - Affected depositor wallets: 103
 - Claim window: 90 days from when the window is opened
@@ -87,7 +87,7 @@ Each depositor claims by calling the contract from the same wallet they deposite
 ### Fees
 
 - **Venus, 20%**, for the governance action and for taking on the review.
-- **Founder, 10%**, for the work of making this recovery possible. That covers hiring a developer, the technical investigation, building and testing the contracts, the audit, and this proposal.
+- **Founder, 10%**, recovery cost.
 - **Depositors, 70%**, claimable in full by every affected wallet.
 
 Neither fee depends on how many depositors claim.
