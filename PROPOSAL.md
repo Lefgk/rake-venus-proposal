@@ -13,7 +13,7 @@ We are asking Venus to approve one atomic transaction that does three things:
 2. It pays Venus a 20% recovery fee.
 3. It sends the remainder to a claim contract, which keeps 10% of the total as recovery cost *(Appendix [A6](APPENDIX.md#a6-recovery-cost-10))*, and where each original depositor can withdraw their share directly from their own wallet.
 
-Once the funds have arrived, the claim contract's deployer opens a 90-day claim window.
+The same transaction opens a 90-day claim window.
 
 Neither we nor anyone else holds the funds at any point. They move from the frozen positions to the claim contract inside a single Venus transaction.
 
@@ -23,7 +23,7 @@ Neither we nor anyone else holds the funds at any point. They move from the froz
 - Recovery cost, 10%: about $107,490 *(Appendix [A6](APPENDIX.md#a6-recovery-cost-10))*
 - Available to depositors, 70%: about $752,430
 - Affected depositor wallets: 103
-- Claim window: 90 days from when the window is opened
+- Claim window: 90 days, opened by the Venus transaction itself
 - After the window: unclaimed funds go to the contract owner
 
 ## 1. What happened
@@ -94,9 +94,9 @@ Neither fee depends on how many depositors claim.
 
 ### Unclaimed funds
 
-The claim window is 90 days from when the claim contract's deployer opens it (`open()`). Any balance still unclaimed after that goes to the strategy contracts' owner.
+The claim window opens as the last step of the Venus transaction (`open()`) and lasts 90 days. Any balance still unclaimed after that goes to the strategy contracts' owner.
 
-As a safeguard, if the window is never opened, everything in the claim contract goes to the owner 120 days after the contract was deployed, so funds can never be locked in it permanently.
+Nobody, including us, can open the window early or hold it back: only the Venus Timelock can call `open()`.
 
 We expect a significant portion to go unclaimed, and we are saying so plainly rather than leaving reviewers to work it out. These deposits were made in February 2021, at the height of a market cycle, and many of the wallets have been inactive for years. We are proposing that unclaimed funds go to the owner for four reasons:
 
@@ -109,7 +109,7 @@ We expect a significant portion to go unclaimed, and we are saying so plainly ra
 
 So that the 90 days is a real window and not a formality, we will:
 
-- announce the vote and the claim window on the Venus governance forum, in the Forex Shark Calls Telegram channel (@forexsharkcalls), which announced RAKE, on the owner's X account (https://x.com/F0r3x_Shark) and in the owner's Telegram group;
+- announce the vote and the claim window on the Venus governance forum, in the Forex Shark Calls Telegram channel (@forexsharkcalls), which announced RAKE, and on the owner's X account (https://x.com/F0r3x_Shark);
 - send an on-chain message to each of the 103 depositing wallets when the window opens: a zero-value transaction whose data carries the claim link and the deadline, visible on BscScan; and
 - publish the opening and closing dates on the claim page: https://rakeclaim.com
 
