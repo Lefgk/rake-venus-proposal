@@ -20,7 +20,7 @@ Neither we nor anyone else holds the funds at any point. They move from the froz
 **At a glance:**
 - Funds frozen, net of debt: about $1,074,900 (BSC block 131,610,085, 4 Nov 2026, Venus oracle prices)
 - Venus recovery fee, 20%: about $214,980
-- Founder fee, 10%: about $107,490, recovery cost
+- Recovery cost, 10%: about $107,490
 - Available to depositors, 70%: about $752,430
 - Affected depositor wallets: 103
 - Claim window: 90 days from when the window is opened
@@ -87,7 +87,7 @@ Each depositor claims by calling the contract from the same wallet they deposite
 ### Fees
 
 - **Venus, 20%**, for the governance action and for taking on the review.
-- **Founder, 10%**, recovery cost.
+- **Recovery cost, 10%**.
 - **Depositors, 70%**, claimable in full by every affected wallet.
 
 Neither fee depends on how many depositors claim.
@@ -109,7 +109,7 @@ We expect a significant portion to go unclaimed, and we are saying so plainly ra
 
 So that the 90 days is a real window and not a formality, we will:
 
-- announce the vote and the claim window on the Venus governance forum, on RAKE's social media and community channels, on the owner's X account and in the owner's Telegram group;
+- announce the vote and the claim window on the Venus governance forum, in the Forex Shark Calls Telegram channel (@forexsharkcalls), which announced RAKE, on the owner's X account and in the owner's Telegram group;
 - send an on-chain message to each of the 103 depositing wallets when the window opens: a zero-value transaction whose data carries the claim link and the deadline, visible on BscScan; and
 - publish the opening and closing dates on the claim page: https://rakeclaim.com
 
