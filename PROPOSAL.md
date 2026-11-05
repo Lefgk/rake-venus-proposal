@@ -48,7 +48,7 @@ When the vaults froze, we chose to compensate affected depositors immediately, a
 
 The result can be checked on-chain today:
 
-- **Of the RAKE minted to the founder, 92% has never moved.** It is still in the wallet it was minted to. It was held through a price decline from over $43,000 to under $1. Only 0.046% was ever sold.
+- **Of the RAKE minted to the founder, 99.4% was never used.** 92.1% is still in the wallet it was minted to, 6.3% was burned and 1.0% only moved after April 2021. It was held through a price decline from over $43,000 to under $1. Only 0.046% was ever sold.
 - **On the 25 March 2021 measure, 80 of 103 affected wallets had received RAKE worth more than their entire frozen position**, counting only rewards from the frozen pools. The total shortfall across 21 others was about $4,100. The last 2 hold only dust, worth $0.
 - **97 of the 103 wallets sold their RAKE** and realised that value. The six that never sold held a combined frozen balance of under $70.
 
