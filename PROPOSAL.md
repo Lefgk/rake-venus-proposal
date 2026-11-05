@@ -20,7 +20,7 @@ Neither we nor anyone else holds the funds at any point. They move from the froz
 **At a glance:**
 - Funds frozen, net of debt: about $1,074,900 (BSC block 131,610,085, 4 Nov 2026, Venus oracle prices)
 - Venus recovery fee, 20%: about $214,980
-- Founder fee, 10%: about $107,490
+- Founder fee, 10%: about $107,490, for the significant time and effort spent gathering the on-chain data, researching the case and preparing this report
 - Available to depositors, 70%: about $752,430
 - Affected depositor wallets: 103
 - Claim window: 90 days from when the window is opened
@@ -44,7 +44,7 @@ When the vaults froze, we chose to compensate affected depositors immediately, a
 
 **We kept paying them.** Other farms that hit similar problems cut rewards to their broken pools, because those pools no longer earned the platform anything. We did the opposite. The frozen vaults kept receiving their full share of RAKE rewards, so affected depositors kept earning.
 
-**We stopped selling the founder allocation.** RAKE raised no outside money. The founder's only compensation for building the platform was a share of newly issued RAKE, which was meant to be sold gradually over time. We stopped selling it entirely. That kept RAKE's price and liquidity strong enough for affected depositors to sell their rewards and recover the value of their frozen assets.
+**We stopped selling the founder allocation.** RAKE raised no outside money. The founder's only compensation for building the platform was a share of newly issued RAKE, which was meant to be sold gradually over time. We stopped selling it entirely. The founder's allocation, 13.8% on top of every emission, was at least as large as what the frozen pools received (10.8% of emissions at the freeze, falling to 6.3% later). Every RAKE the founder sold would have drained the same liquidity affected depositors needed to sell their rewards into. By not selling, the founder left that liquidity to them. In effect, the founder's pay was transferred to affected depositors.
 
 The result can be checked on-chain today:
 
@@ -56,13 +56,11 @@ These coverage figures value each frozen position at 24 July 2026 prices (BSC bl
 
 Most affected depositors therefore did not lose money from the freeze, and many came out ahead, because the founder gave up the compensation that would otherwise have been paid out. *(Appendix A4.)*
 
-We are not claiming that every depositor was fully compensated, and no depositor signed anything accepting the rewards as settlement. That is one reason this proposal returns the funds to depositors rather than to us.
-
 ## 3. Why now
 
-We first raised this with Venus in 2021. At the time, the Venus team had a full plate with unrelated matters, and affected depositors had already been largely compensated through the measures above. We set it aside until it could be given proper attention.
+We first raised this with Venus in 2021, right after the freeze. It came in the middle of Venus's own depeg crisis, the Venus team had a full plate with unrelated matters, and the issue got no traction. In the meantime, we compensated affected depositors through the measures above. We kept reaching out about every six months after that, and kept working through every other way to recover the funds ourselves. Those options are now exhausted *(Appendix A1)*, and Venus has new leadership with a team able to take this on. That is why now.
 
-Waiting is no longer harmless:
+It is also urgent. Every month of delay costs money:
 
 - **The positions are losing value.** Their debt keeps accruing interest that cannot be repaid.
 - **Venus's own risk management is eroding them.** When Venus deprecated DOT as collateral, the frozen DOT position was liquidated sixteen times in under a minute, and most of its value was lost to liquidation penalties and interest. The LINK position is exposed to the same thing.
@@ -100,11 +98,12 @@ The claim window is 90 days from when the claim contract's deployer opens it (`o
 
 As a safeguard, if the window is never opened, everything in the claim contract goes to the owner 120 days after the contract was deployed, so funds can never be locked in it permanently.
 
-We expect a significant portion to go unclaimed, and we are saying so plainly rather than leaving reviewers to work it out. These deposits were made in February 2021, at the height of a market cycle, and many of the wallets have been inactive for years. We are proposing that unclaimed funds go to the owner for three reasons:
+We expect a significant portion to go unclaimed, and we are saying so plainly rather than leaving reviewers to work it out. These deposits were made in February 2021, at the height of a market cycle, and many of the wallets have been inactive for years. We are proposing that unclaimed funds go to the owner for four reasons:
 
 1. **Funds should not be sent to wallets nobody controls.** Paying out automatically to all 103 addresses would send money to wallets that may be lost or abandoned. Requiring each depositor to claim from their own wallet means only someone in control of that wallet receives funds.
-2. **The owner is the only remaining party with a claim to what is left.** The frozen positions belong to the owner's contracts. Without a fallback, unclaimed funds would sit in an abandoned contract forever.
-3. **The owner already compensated depositors once.** In 2021, the founder gave up the RAKE allocation that was their only payment for building the platform, so that affected depositors could recover their value. Every depositor who comes back still receives their full share. Only funds that nobody claims go to the party that bore that cost.
+2. **The owner is a party to this recovery.** The frozen positions are held by the owner's contracts, so the owner has to agree to these terms. Without a fallback, unclaimed funds would sit in an abandoned contract forever.
+3. **The owner already compensated depositors once, at their own cost.** In 2021, the founder gave up selling the RAKE allocation that was their only payment for building the platform, and held it through a fall from over $43,000 to under $1. Every depositor who comes back still receives their full share. Only funds that nobody claims go to the party that bore that cost.
+4. **The owner made this recovery possible.** The investigation, contracts, tests and this proposal were done and paid for by the owner. Without that work, nothing would be returned to anyone.
 
 ### Notifying depositors
 
