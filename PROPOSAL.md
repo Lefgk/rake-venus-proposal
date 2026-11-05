@@ -11,7 +11,7 @@ We are asking Venus to approve one atomic transaction that does three things:
 
 1. It settles the frozen positions' debt against their own collateral, at no cost to other Venus suppliers.
 2. It pays Venus a 20% recovery fee.
-3. It sends the remainder to a claim contract, where each original depositor can withdraw their share directly from their own wallet.
+3. It sends the remainder to a claim contract, which keeps 10% of the total as recovery cost *(Appendix A6)*, and where each original depositor can withdraw their share directly from their own wallet.
 
 Once the funds have arrived, the claim contract's deployer opens a 90-day claim window.
 
@@ -20,7 +20,7 @@ Neither we nor anyone else holds the funds at any point. They move from the froz
 **At a glance:**
 - Funds frozen, net of debt: about $1,074,900 (BSC block 131,610,085, 4 Nov 2026, Venus oracle prices)
 - Venus recovery fee, 20%: about $214,980
-- Recovery cost, 10%: about $107,490
+- Recovery cost, 10%: about $107,490 *(Appendix A6)*
 - Available to depositors, 70%: about $752,430
 - Affected depositor wallets: 103
 - Claim window: 90 days from when the window is opened
@@ -48,7 +48,7 @@ When the vaults froze, we chose to compensate affected depositors immediately, a
 
 The result can be checked on-chain today:
 
-- **Of the RAKE minted to the founder, 99.4% was never used.** 92.1% is still in the wallet it was minted to, 6.3% was burned and 1.0% only moved after April 2021. It was held through a price decline from over $43,000 to under $1. Only 0.046% was ever sold.
+- **Of the RAKE minted to the founder, 98.5% was never sold or given away.** 92.1% is still in the wallet it was minted to and 6.5% was burned. It was held through a price decline from over $43,000 to under $1. Only 0.9% was ever sold, for about $9,200.
 - **On the 25 March 2021 measure, 80 of 103 affected wallets had received RAKE worth more than their entire frozen position**, counting only rewards from the frozen pools. The total shortfall across 21 others was about $4,100. The last 2 hold only dust, worth $0.
 - **97 of the 103 wallets sold their RAKE** and realised that value. The six that never sold held a combined frozen balance of under $70.
 
@@ -87,7 +87,7 @@ Each depositor claims by calling the contract from the same wallet they deposite
 ### Fees
 
 - **Venus, 20%**, for the governance action and for taking on the review.
-- **Recovery cost, 10%**.
+- **Recovery cost, 10%** *(Appendix A6)*.
 - **Depositors, 70%**, claimable in full by every affected wallet.
 
 Neither fee depends on how many depositors claim.
@@ -160,3 +160,4 @@ The full technical appendix is in [APPENDIX.md](APPENDIX.md):
 - **A3:** the claim contract, with the per-wallet table in [depositor_share_of_each_frozen_pool.csv](data/depositor_share_of_each_frozen_pool.csv)
 - **A4:** the 2021 compensation data
 - **A5:** tests and reproduction
+- **A6:** the 10% recovery cost
