@@ -110,7 +110,7 @@ We expect a significant portion to go unclaimed, and we are saying so plainly ra
 So that the 90 days is a real window and not a formality, we will:
 
 - send an on-chain message to each of the 103 depositing wallets when the window opens: a zero-value transaction whose data carries the claim link and the deadline, visible on BscScan; and
-- publish the opening and closing dates on the claim page: https://claim-frontend-one.vercel.app
+- publish the opening and closing dates on the claim page: https://rakeclaim.com
 
 ## 5. What Venus is being asked to accept
 
