@@ -58,7 +58,7 @@ Most affected depositors therefore did not lose money from the freeze, and many 
 
 ## 3. Why now
 
-We first raised this with Venus in 2021, right after the freeze. It came in the middle of Venus's own depeg crisis, the Venus team had a full plate with unrelated matters, and the issue got no traction. In the meantime, we compensated affected depositors through the measures above. We kept reaching out about every six months after that, and kept working through every other way to recover the funds ourselves. Those options are now exhausted *(Appendix A1)*, and Venus has new leadership with a team able to take this on. That is why now.
+We first raised this with Venus in 2021, Venus had a full plate at the time due to unrelated events, so we put our focus on compensating affected users through the above means. Since then we hired an expert to ensure we have exhausted all options in our power to recover the funds and are confident it will require action from Venus. We have also completed development of the scripts, contracts and frontend that will be required to do a proper recovery. This proposal is coming after significant communication with the Venus team.
 
 It is also urgent. Every month of delay costs money:
 
